@@ -1,5 +1,9 @@
 /*! tailwindcss v2.0.4 | MIT License | https://tailwindcss.com */
 /*! modern-normalize v1.0.0 | MIT License | https://github.com/sindresorhus/modern-normalize */
+@font-face {
+  font-family: 'Iceberg';
+  src: url('../font/Iceberg.ttf') format('truetype');
+}
 
 :root {
   -moz-tab-size: 4;
