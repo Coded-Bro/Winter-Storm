@@ -396,13 +396,14 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
 @media only screen and (max-width:1000px) {
   .storm_main {
     width: 100%;
+    margin: 0;
     margin-bottom: 15px;
   }
 
   .storm_title {
     border-bottom: 2px solid hsla(0,0%,100%,.16);
     padding: 10px 15px;
-    font-size: 18px;
+    font-size: 10px;
     line-height: 24px;
   }
 
@@ -428,7 +429,7 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
 
   .column .storm_main {
     width: 100%;
-    margin-left: 69px;
+    margin-left: 1px;
   }
 
   .operate {
@@ -469,6 +470,6 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
   }
 
   .hold_main {
-    margin-top: 1%;
+    margin: 1%;
   }
 }
