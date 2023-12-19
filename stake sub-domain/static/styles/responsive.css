@@ -397,6 +397,12 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
     width: 100%;
     margin: 0;
     margin-bottom: 15px;
+  } 
+
+  .hold_main {
+    width: 100%;
+    margin: 0;
+    margin-bottom: 15px;
   }
 
   .storm_title {
@@ -468,7 +474,4 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
     font-size: 12px;
   }
 
-  .hold_main {
-    margin: 1%;
-  }
 }
