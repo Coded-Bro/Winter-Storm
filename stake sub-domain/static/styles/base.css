@@ -4079,7 +4079,7 @@ div.wrapper {
 }
 
 section.home_hero .global_inner {
-  /* min-height: 660px */
+  min-height: 660px
 }
 
 .home_hero:after {
