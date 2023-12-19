@@ -356,3 +356,64 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
     margin: auto 10%;
   }
 }
+
+@media only screen and (max-width:1000px) {
+  .storm_main {
+    margin-bottom: 15px;
+  }
+
+  .storm_title {
+    border-bottom: 2px solid hsla(0,0%,100%,.16);
+    padding: 10px 15px;
+    font-size: 18px;
+    line-height: 24px;
+  }
+
+  .statistics {
+    padding: 15px 15px;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+
+  .tit {
+    width: 100%;
+    padding: 8px 0;
+  }
+
+  .value {
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .column {
+    flex-wrap: wrap;
+  }
+
+  .column .storm_main {
+    width: 100%;
+  }
+
+  .operate {
+    padding: 20px 10px;
+  }
+
+  .coin {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .money {
+    font-weight: 700;
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .hero_content_container {
+    height: 100vh;
+  }
+
+  .img54 {
+    width: 25%;
+  }
+}
