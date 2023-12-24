@@ -1,9 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 import "../styles/base.css";
 import "../styles/responsive.css";
+import Link from "next/link";
 
 export default function App({ Component, pageProps }) {
+  useEffect(() => {
+    // Add bootstrap js
+    require("bootstrap/dist/js/bootstrap.bundle.min.js");
+  }, []);
+
   return (
     <>
       <div id="wrapper" style={{ marginBottom: "4%" }}>
@@ -11,17 +18,17 @@ export default function App({ Component, pageProps }) {
 
         <div id="menu" className="our_nav">
           <div className="nav_inner">
-            <nav className="navbar">
+            <nav className="storm-navbar">
               <ul className="logo_container">
                 <li>
                   <div className="font_extrabold text_xl">
-                    <a href="https://winterstorm.finance/">
+                    <Link href="/">
                       <span className="logo">
                         <span className="logo_image">
                           <img src="logo_with_word.svg" alt="" />
                         </span>
                       </span>
-                    </a>
+                    </Link>
                   </div>
                 </li>
               </ul>
@@ -36,9 +43,9 @@ export default function App({ Component, pageProps }) {
                         role="button"
                         aria-hidden="true"
                       >
-                        <a href="https://vault.winterstorm.finance/">
+                        <Link href="/">
                           <span className="menu_name">STAKE STORM</span>
-                        </a>
+                        </Link>
                       </span>
                     </div>
                   </li>
