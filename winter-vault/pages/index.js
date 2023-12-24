@@ -27,24 +27,11 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="storm_main">
-            <div className="storm_title">STORM Staking Statistics</div>
-            <div className="statistics">
-              <div className="item">
-                <div className="tit">Current Staking</div>
-                <div className="value">5015.53m STM</div>
-              </div>
-              <div className="item">
-                <div className="tit">APY</div>
-                <div className="value">110.83 %</div>
-              </div>
-            </div>
-          </div>
           <div className="column d-flex justify-content-center position-relative">
             <div className="storm_main">
               <div className="storm_title d-flex align-items-center">
                 <img className="mini-storm" src="Storm_150x150.png" alt="" />
-                Stake STM
+                Stake STM to Earn STM
               </div>
               <div className="operate">
                 <div className="stake-info w-100">
@@ -165,48 +152,41 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="column">
-            <div className="hold_main">
-              <div className="storm_title">Total Dividends</div>
-              <div className="operate">
-                <div className="coin">
-                  <img className="img54" src="Storm_150x150.png" alt="" />
-                </div>
-                <div className="money">0 STM</div>
+          <div className="column d-flex justify-content-center">
+            <div className="storm_main">
+              <div className="storm_title d-flex align-items-center">
+                <img className="mini-storm" src="Storm_150x150.png" alt="" />
+                Hold STM to Earn STM
               </div>
-            </div>
-            <div className="hold_main">
-              <div className="storm_title">Pending Rewards</div>
               <div className="operate">
-                <div className="coin">
-                  <img className="img54" src="Storm_150x150.png" alt="" />
+                <div className="stake-info w-100">
+                  <div className="d-flex justify-content-between">
+                    <p>Total Dividends</p>
+                    <p className="fw-bold">0 STM</p>
+                  </div>
+                  <div className="d-flex justify-content-between">
+                    <p>Pending Rewards</p>
+                    <p className="fw-bold">0 STM</p>
+                  </div>
+                  <div className="d-flex justify-content-between">
+                    <p>Total Earnings</p>
+                    <p className="fw-bold">0 STM</p>
+                  </div>
+                  <div className="d-flex justify-content-between">
+                    <p>$STM in Wallet</p>
+                    <p className="fw-bold">0 STM</p>
+                  </div>
                 </div>
-                <div className="money">0 STM</div>
-                <div className="storm_btns">
-                  <a href="" className="disable">
-                    <span>Claim Rewards</span>
-                  </a>
+
+                <div className="storm_btns mt-3">
+                  <button
+                    className="btn btn-primary"
+                    data-bs-toggle="modal"
+                    data-bs-target="#stateModal"
+                  >
+                    Claim Rewards
+                  </button>
                 </div>
-              </div>
-            </div>
-          </div>
-          <div className="column">
-            <div className="hold_main">
-              <div className="storm_title">STORM in Wallet</div>
-              <div className="operate">
-                <div className="coin">
-                  <img className="img54" src="Storm_150x150.png" alt="" />
-                </div>
-                <div className="money">0 STM</div>
-              </div>
-            </div>
-            <div className="hold_main">
-              <div className="storm_title">Total STORM Earned</div>
-              <div className="operate">
-                <div className="coin">
-                  <img className="img54" src="Storm_150x150.png" alt="" />
-                </div>
-                <div className="money">0 STM</div>
               </div>
             </div>
           </div>
