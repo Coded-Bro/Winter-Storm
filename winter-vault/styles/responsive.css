@@ -156,7 +156,7 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
   border: 1px solid rgba(255, 255, 255, 0.502);
   border-radius: 6px;
   display: flex;
-  justify-content: start;
+  justify-content: flex-start;
   align-items: center;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
@@ -199,6 +199,7 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
   padding: 15px 20px;
   font-size: 20px;
   line-height: 28px;
+  gap: 10px;
 }
 
 .statistics {
@@ -232,11 +233,11 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
 }
 
 .column .storm_main {
-  width: 49%;
+  max-width: 516px !important;
 }
 
 .operate {
-  padding: 30px 152px;
+  padding: 20px 25px;
 }
 
 .coin {
@@ -249,12 +250,7 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
   margin-left: auto;
   margin-right: auto;
   width: 50%;
-  /* padding-left: 39%;
-  height: auto;
-  margin: 0 5px; */
 }
-
-
 
 .money {
   font-weight: 700;
@@ -274,7 +270,12 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
   font-weight: 700;
   padding: 3px 0px;
   border-radius: 12px;
-  border: 2px solid grey;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.storm_btns .btn {
+  border-radius: 10px;
 }
 
 .stm_title {
@@ -288,10 +289,9 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
   background: linear-gradient(270deg, #11d617, #0752bb);
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
+  background-clip: text;
   font-size: 3em;
 }
-
-
 
 .desc {
   color: hsla(0, 0%, 100%, .8);
@@ -407,7 +407,7 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
   .storm_title {
     border-bottom: 2px solid hsla(0, 0%, 100%, .16);
     padding: 10px 15px;
-    font-size: 10px;
+    font-size: 18px;
     line-height: 24px;
   }
 
@@ -437,7 +437,7 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
   }
 
   .operate {
-    padding: 20px 10px;
+    padding: 20px 20px;
   }
 
   .coin {
@@ -467,10 +467,6 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
 
   .pc {
     font-size: 35px;
-  }
-
-  p {
-    font-size: 12px;
   }
 
 }

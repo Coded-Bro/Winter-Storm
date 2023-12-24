@@ -1,19 +1,68 @@
 /* eslint-disable @next/next/no-img-element */
 import { useEffect } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+import "./main.scss";
 import "../styles/base.css";
 import "../styles/responsive.css";
 import Link from "next/link";
+import Head from "next/head";
 
 export default function App({ Component, pageProps }) {
   useEffect(() => {
     // Add bootstrap js
     require("bootstrap/dist/js/bootstrap.bundle.min.js");
+
+    // Remove the default stylesheet
+    const styles = document.querySelector("#stitches");
+
+    if (styles) {
+      styles.remove();
+    }
   }, []);
 
   return (
     <>
-      <div id="wrapper" style={{ marginBottom: "4%" }}>
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+
+        <meta charSet="UTF-8" />
+        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="title" content="Stake & Hold Storm" />
+        <meta
+          name="description"
+          content="Reward Dashboard for STORM Stakers and Holders."
+        />
+
+        {/* Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://vault.winterstorm.finance" />
+        <meta property="og:title" content="Stake & Hold Storm" />
+        <meta
+          property="og:description"
+          content="Reward Dashboard for STORM Stakers and Holders."
+        />
+        <meta
+          property="og:image"
+          content="https://vault.winterstorm.finance/static/images/logo_with_words.png"
+        />
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta
+          property="twitter:url"
+          content="https://vault.winterstorm.finance"
+        />
+        <meta property="twitter:title" content="Stake Storm" />
+        <meta
+          property="twitter:description"
+          content="Winter is here, the Storm is upon us."
+        />
+        <meta
+          property="twitter:image"
+          content="https://vault.winterstorm.finance/static/images/logo_with_words.png"
+        />
+      </Head>
+      <div id="wrapper" style={{ marpaginBottom: "4%" }}>
         {/* Navbar */}
 
         <div id="menu" className="our_nav">

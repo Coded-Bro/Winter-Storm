@@ -154,11 +154,6 @@ pre {
   margin: 0
 }
 
-button {
-  background-color: transparent;
-  background-image: none
-}
-
 button:focus {
   outline: 1px dotted;
   outline: 5px auto -webkit-focus-ring-color
@@ -282,7 +277,6 @@ video {
 .btn {
   border-radius: .25rem;
   --tw-bg-opacity: 1;
-  background-color: rgba(49, 130, 206, var(--tw-bg-opacity));
   padding: .5rem 1rem;
   font-weight: 700;
   color: rgba(255, 255, 255, var(--tw-text-opacity))
@@ -14115,4 +14109,9 @@ body.home .token tbody {
   border-radius: 10px;
   background-color: #fa9cf5;
   border: 2px solid purple;
+}
+
+.mini-storm {
+  border-radius: 50%;
+  width: 48px;
 }
