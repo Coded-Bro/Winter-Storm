@@ -68,38 +68,23 @@ export default function App({ Component, pageProps }) {
         <div id="menu" className="our_nav">
           <div className="nav_inner">
             <nav className="storm-navbar">
-              <ul className="logo_container">
-                <li>
-                  <div className="font_extrabold text_xl">
-                    <Link href="/">
-                      <span className="logo">
-                        <span className="logo_image">
-                          <img src="logo_with_word.svg" alt="" />
+              <div className="d-flex">
+                <ul className="logo_container">
+                  <li>
+                    <div className="font_extrabold text_xl">
+                      <Link href="https://winterstorm.finance">
+                        <span className="logo">
+                          <span className="logo_image">
+                            <img src="logo_with_word.svg" alt="" />
+                          </span>
                         </span>
-                      </span>
-                    </Link>
-                  </div>
-                </li>
-              </ul>
-
-              <span className="primary_links">
-                <ul className="menu_hero">
-                  <li className="parent_menu_item our_menu_item">
-                    <div className="list_menu_container">
-                      <span className="dropdown_trigger"> </span>
-                      <span
-                        className="link_container"
-                        role="button"
-                        aria-hidden="true"
-                      >
-                        <Link href="/">
-                          <span className="menu_name">STAKE STORM</span>
-                        </Link>
-                      </span>
+                      </Link>
                     </div>
                   </li>
                 </ul>
+              </div>
 
+              <span className="primary_links">
                 <ul className="menu_right">
                   <li>
                     <a href="https://winterstorm.finance/#about">
@@ -129,12 +114,27 @@ export default function App({ Component, pageProps }) {
                 </ul>
               </span>
             </nav>
-            <div id="hamburger">
-              <span></span>
-              <span></span>
-              <span></span>
-              <span></span>
-              <span>Menu</span>
+            <div className="d-flex justify-content-around">
+              <div className="d-flex align-items-center">
+                <button
+                  className="btn btn-success btn-sm"
+                  style={{
+                    borderRadius: "16px",
+                    whiteSpace: "nowrap",
+                    background: "linear-gradient(270deg, #11d617, #0752bb)",
+                  }}
+                  id="connectWallet"
+                >
+                  Connect Wallet
+                </button>
+              </div>
+              <div id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span>Menu</span>
+              </div>
             </div>
           </div>
         </div>
