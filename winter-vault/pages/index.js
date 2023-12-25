@@ -1,5 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
-import { action, autoCompound, getPoolDetails } from "@/components/config";
+import {
+  action,
+  autoCompound,
+  getHolderDetails,
+  getPoolDetails,
+} from "@/components/config";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 
@@ -11,9 +16,10 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState("");
+  const [holderInfo, setHolderInfo] = useState({});
 
   useEffect(() => {
-    getPoolInfo();
+    getInterfaceInfo();
   }, []);
 
   useEffect(() => {
@@ -23,10 +29,12 @@ export default function Home() {
     }
   }, [poolInfo]);
 
-  const getPoolInfo = async () => {
+  const getInterfaceInfo = async () => {
     setInterval(async () => {
       const poolInfo = await getPoolDetails();
+      const holderInfo = await getHolderDetails();
       setPoolInfo(poolInfo);
+      setHolderInfo(holderInfo);
     }, 3000);
   };
 
@@ -100,12 +108,12 @@ export default function Home() {
                 <div className="operate">
                   <div className="stake-info w-100">
                     <div className="d-flex justify-content-between">
-                      <p>APY</p>
-                      <p className="fw-bold">{poolInfo.apy}%</p>
+                      <p>Reward Per Token</p>
+                      <p className="fw-bold">{poolInfo.rewardPerToken}</p>
                     </div>
                     <div className="d-flex justify-content-between">
-                      <p>Available</p>
-                      <p className="fw-bold">0</p>
+                      <p>Available $STM</p>
+                      <p className="fw-bold">{poolInfo.userBalance}</p>
                     </div>
                     <div className="d-flex justify-content-between">
                       <p>My Stakings</p>
@@ -248,42 +256,47 @@ export default function Home() {
             </div>
           </div>
           <div className="column d-flex justify-content-center">
-            <div className="storm_main">
-              <div className="storm_title d-flex align-items-center">
-                <img className="mini-storm" src="Storm_150x150.png" alt="" />
-                Hold STM to Earn STM
+            {loading ? (
+              <div className="d-flex display-4 text-light justify-content-center align-items-center">
+                <p>Loading...</p>
               </div>
-              <div className="operate">
-                <div className="stake-info w-100">
-                  <div className="d-flex justify-content-between">
-                    <p>Total Dividends</p>
-                    <p className="fw-bold">0 STM</p>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <p>Pending Rewards</p>
-                    <p className="fw-bold">0 STM</p>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <p>Total Earnings</p>
-                    <p className="fw-bold">0 STM</p>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <p>$STM in Wallet</p>
-                    <p className="fw-bold">0 STM</p>
-                  </div>
+            ) : (
+              <div className="storm_main">
+                <div className="storm_title d-flex align-items-center">
+                  <img className="mini-storm" src="Storm_150x150.png" alt="" />
+                  Hold STM to Earn STM
                 </div>
+                <div className="operate">
+                  <div className="stake-info w-100">
+                    <div className="d-flex justify-content-between">
+                      <p>Reward Per Day</p>
+                      <p className="fw-bold">{holderInfo.rewardPerDay} STM</p>
+                    </div>
+                    <div className="d-flex justify-content-between">
+                      <p>Pending Rewards</p>
+                      <p className="fw-bold">{holderInfo.pendingRewards} STM</p>
+                    </div>
+                    <div className="d-flex justify-content-between">
+                      <p>Total Earnings</p>
+                      <p className="fw-bold">{holderInfo.totalEarnings} STM</p>
+                    </div>
+                    <div className="d-flex justify-content-between">
+                      <p>$STM in Wallet</p>
+                      <p className="fw-bold">{poolInfo.userBalance} STM</p>
+                    </div>
+                  </div>
 
-                <div className="storm_btns mt-3">
-                  <button
-                    className="btn btn-primary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#stateModal"
-                  >
-                    Claim Rewards
-                  </button>
+                  <div className="storm_btns mt-3">
+                    <button
+                      className="btn btn-primary"
+                      onClick={getHolderDetails}
+                    >
+                      Claim Rewards
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </section>
       </main>

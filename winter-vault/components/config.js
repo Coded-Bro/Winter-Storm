@@ -2,9 +2,12 @@ import { createWalletClient, custom } from "viem";
 import { sepolia } from "viem/chains";
 import tokenABI from "./erc20abi.json";
 import stormStakeABI from "./stormStakeABI.json";
+import holderBonusABI from "./holderBonusABI.json";
 import { ethers } from "ethers";
 
 const stormStakeAddr = "0x29cc28f60F5405Ffd7949DDf4FB698b4427223ab";
+
+const holderBonusAddr = "0x73c29475088b472d5ecc98bcd52e7f25db2939ff";
 
 const web3Provider = async () => {
   const [account] = await window.ethereum.request({
@@ -64,10 +67,7 @@ export const getPoolDetails = async () => {
   const poolInfo = await stormStakeContract?.poolInfo(0);
   const poolId = 0;
   const tokenAddress = poolInfo[poolId];
-  const rewardPerTokenRaw = poolInfo[3].toString();
-  const rewardPerToken = Number(
-    await convertToEth("reward", rewardPerTokenRaw)
-  );
+  const rewardPerToken = poolInfo[3].toString();
   const tokenBalances = await fetchTokenBalance(
     tokenAddress,
     userWalletAddress
@@ -82,23 +82,16 @@ export const getPoolDetails = async () => {
   const bonusMultiplier = (
     await stormStakeContract?.BONUS_MULTIPLIER()
   ).toString();
-  const userReward = Number(await convertToEth("reward", userRewardRaw));
+  const userReward = Number(
+    await convertToEth("reward", userRewardRaw)
+  ).toFixed("2");
   const userStaked = Number(
     await convertToEth("reward", userStakedArray["amount"].toString())
   );
-  // Calculate the APY in percentage, the result should be a percentage
-  // Calculate the rate per period (r)
-  // Assuming rewardPerToken is per year and we want to compound semi-annually
-  const n = 2; // Compounding periods per year
-  const totalStaked = parseFloat(tokenBalances.pool);
-  const r = totalStaked > 0 ? rewardPerToken / totalStaked / n : 0;
-
-  // Calculate the APY using the formula
-  const apy = totalStaked > 0 ? ((1 + r) ** n - 1) * 100 : 0;
 
   const poolStats = {
     totalStaked: tokenBalances.pool,
-    apy: apy.toFixed(2),
+    rewardPerToken: rewardPerToken,
     userStaked: userStaked,
     reward: userReward,
     multiplier: bonusMultiplier,
@@ -146,4 +139,30 @@ export const autoCompound = async () => {
   } catch (err) {
     console.log(err);
   }
+};
+
+export const getHolderDetails = async () => {
+  const { signer, connection } = await connectWallet();
+  const userWalletAddress = connection?.account?.address;
+  const holderContract = new ethers.Contract(
+    holderBonusAddr,
+    holderBonusABI,
+    signer
+  );
+
+  const holderInfo = await holderContract?.getUserView(userWalletAddress);
+
+  const holderStats = {
+    rewardPerDay: Number(
+      await convertToEth(null, holderInfo[0].toString())
+    ).toFixed("2"),
+    pendingRewards: Number(
+      await convertToEth(null, holderInfo[2].toString())
+    ).toFixed("2"),
+    totalEarnings: Number(
+      await convertToEth(null, holderInfo[3].toString())
+    ).toFixed("2"),
+  };
+
+  return holderStats;
 };
