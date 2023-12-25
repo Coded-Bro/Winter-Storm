@@ -1,56 +1,110 @@
 /* eslint-disable @next/next/no-img-element */
-import { useEffect } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
+import "./main.scss";
 import "../styles/base.css";
 import "../styles/responsive.css";
 import Link from "next/link";
+import Head from "next/head";
+import { getPoolDetails } from "@/components/config";
+import { connectWallet } from "@/components/config";
+import { useEffect, useState } from "react";
 
 export default function App({ Component, pageProps }) {
+  const [status, setStatus] = useState("Connect Wallet");
+
+  const connect = async () => {
+    const walletAddress = await connectWallet().then((value) => {
+      return value?.connection?.account?.address;
+    });
+    localStorage.setItem("wallet", walletAddress);
+  };
+
+  useEffect(() => {
+    setInterval(() => {
+      const walletAddress = localStorage.getItem("wallet");
+      if (walletAddress !== null) {
+        setStatus("Connected");
+      }
+    }, 5000);
+  }, []);
+
   useEffect(() => {
     // Add bootstrap js
     require("bootstrap/dist/js/bootstrap.bundle.min.js");
+
+    // Remove the default stylesheet
+    const styles = document.querySelector("#stitches");
+
+    if (styles) {
+      styles.remove();
+    }
   }, []);
 
   return (
     <>
-      <div id="wrapper" style={{ marginBottom: "4%" }}>
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+
+        <meta charSet="UTF-8" />
+        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="title" content="Stake & Hold Storm" />
+        <meta
+          name="description"
+          content="Reward Dashboard for STORM Stakers and Holders."
+        />
+
+        {/* Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://vault.winterstorm.finance" />
+        <meta property="og:title" content="Stake & Hold Storm" />
+        <meta
+          property="og:description"
+          content="Reward Dashboard for STORM Stakers and Holders."
+        />
+        <meta
+          property="og:image"
+          content="https://vault.winterstorm.finance/static/images/logo_with_words.png"
+        />
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta
+          property="twitter:url"
+          content="https://vault.winterstorm.finance"
+        />
+        <meta property="twitter:title" content="Stake Storm" />
+        <meta
+          property="twitter:description"
+          content="Winter is here, the Storm is upon us."
+        />
+        <meta
+          property="twitter:image"
+          content="https://vault.winterstorm.finance/static/images/logo_with_words.png"
+        />
+      </Head>
+      <div id="wrapper" style={{ marpaginBottom: "4%" }}>
         {/* Navbar */}
 
         <div id="menu" className="our_nav">
           <div className="nav_inner">
             <nav className="storm-navbar">
-              <ul className="logo_container">
-                <li>
-                  <div className="font_extrabold text_xl">
-                    <Link href="/">
-                      <span className="logo">
-                        <span className="logo_image">
-                          <img src="logo_with_word.svg" alt="" />
+              <div className="d-flex">
+                <ul className="logo_container">
+                  <li>
+                    <div className="font_extrabold text_xl">
+                      <Link href="https://winterstorm.finance">
+                        <span className="logo">
+                          <span className="logo_image">
+                            <img src="logo_with_word.svg" alt="" />
+                          </span>
                         </span>
-                      </span>
-                    </Link>
-                  </div>
-                </li>
-              </ul>
-
-              <span className="primary_links">
-                <ul className="menu_hero">
-                  <li className="parent_menu_item our_menu_item">
-                    <div className="list_menu_container">
-                      <span className="dropdown_trigger"> </span>
-                      <span
-                        className="link_container"
-                        role="button"
-                        aria-hidden="true"
-                      >
-                        <Link href="/">
-                          <span className="menu_name">STAKE STORM</span>
-                        </Link>
-                      </span>
+                      </Link>
                     </div>
                   </li>
                 </ul>
+              </div>
 
+              <span className="primary_links">
                 <ul className="menu_right">
                   <li>
                     <a href="https://winterstorm.finance/#about">
@@ -80,12 +134,28 @@ export default function App({ Component, pageProps }) {
                 </ul>
               </span>
             </nav>
-            <div id="hamburger">
-              <span></span>
-              <span></span>
-              <span></span>
-              <span></span>
-              <span>Menu</span>
+            <div className="d-flex justify-content-around">
+              <div className="d-flex align-items-center">
+                <button
+                  className="btn btn-success btn-sm"
+                  style={{
+                    borderRadius: "16px",
+                    whiteSpace: "nowrap",
+                    background: "linear-gradient(270deg, #11d617, #0752bb)",
+                  }}
+                  id="connectWallet"
+                  onClick={connect}
+                >
+                  {status}
+                </button>
+              </div>
+              <div id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span>Menu</span>
+              </div>
             </div>
           </div>
         </div>
