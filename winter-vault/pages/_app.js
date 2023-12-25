@@ -1,12 +1,32 @@
 /* eslint-disable @next/next/no-img-element */
-import { useEffect } from "react";
 import "./main.scss";
 import "../styles/base.css";
 import "../styles/responsive.css";
 import Link from "next/link";
 import Head from "next/head";
+import { getPoolDetails } from "@/components/config";
+import { connectWallet } from "@/components/config";
+import { useEffect, useState } from "react";
 
 export default function App({ Component, pageProps }) {
+  const [status, setStatus] = useState("Connect Wallet");
+
+  const connect = async () => {
+    const walletAddress = await connectWallet().then((value) => {
+      return value?.connection?.account?.address;
+    });
+    localStorage.setItem("wallet", walletAddress);
+  };
+
+  useEffect(() => {
+    setInterval(() => {
+      const walletAddress = localStorage.getItem("wallet");
+      if (walletAddress !== null) {
+        setStatus("Connected");
+      }
+    }, 5000);
+  }, []);
+
   useEffect(() => {
     // Add bootstrap js
     require("bootstrap/dist/js/bootstrap.bundle.min.js");
@@ -124,8 +144,9 @@ export default function App({ Component, pageProps }) {
                     background: "linear-gradient(270deg, #11d617, #0752bb)",
                   }}
                   id="connectWallet"
+                  onClick={connect}
                 >
-                  Connect Wallet
+                  {status}
                 </button>
               </div>
               <div id="hamburger">
