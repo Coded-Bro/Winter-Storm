@@ -360,7 +360,7 @@ export default function Home() {
               <div className="con">
                 <div className="desc">
                   <h2 className="pc" style={{ marginTop: '100px' }}>
-                    Storm Hold
+                    BLIZZARD REWARDS SYSTEM
                   </h2>
                   <p className="p">Storm Holders reward panel.</p>
                 </div>
