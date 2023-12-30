@@ -1,5 +1,5 @@
 import { createWalletClient, custom } from 'viem';
-import { sepolia } from 'viem/chains';
+import { goerli } from 'viem/chains';
 import tokenABI from './erc20abi.json';
 import stormStakeABI from './stormStakeABI.json';
 import holderBonusABI from './holderBonusABI.json';
@@ -16,7 +16,7 @@ const web3Provider = async () => {
 
   const client = createWalletClient({
     account,
-    chain: sepolia,
+    chain: goerli,
     transport: custom(window.ethereum),
   });
 
@@ -165,4 +165,43 @@ export const getHolderDetails = async () => {
   };
 
   return holderStats;
+};
+
+export const switchChain = async (targetChainId) => {
+  let result = false;
+
+  try {
+    await window.ethereum
+      .request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: `0x${targetChainId.toString(16)}` }],
+      })
+      .then(() => (result = true));
+
+    return result;
+  } catch (switchError) {
+    // This error code indicates that the chain has not been added to MetaMask.
+    if (switchError.code === 4902) {
+      try {
+        await window.ethereum
+          .request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: `0x${targetChainId.toString(16)}`,
+              },
+            ],
+          })
+          .then(() => (result = true));
+
+        return result;
+      } catch (addError) {
+        console.log(addError);
+
+        return result;
+      }
+    } else {
+      return result;
+    }
+  }
 };

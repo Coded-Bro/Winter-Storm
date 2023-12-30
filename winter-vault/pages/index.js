@@ -9,9 +9,11 @@ import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { connectWallet } from '@/components/config';
+import { switchChain } from '@/components/config';
 
 // TODO: Implement shimmer loading
-// TODO: Disable buttons for user that is not connnected or invalid inputValue
+
+const CHAIN_ID = 5;
 
 export default function Home() {
   const [poolInfo, setPoolInfo] = useState({});
@@ -21,14 +23,22 @@ export default function Home() {
   const [holderInfo, setHolderInfo] = useState({});
   const [infoIntervalId, setInfoIntervalId] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [currentChainId, setChainId] = useState(null);
 
   const connect = async () => {
+    if (currentChainId !== CHAIN_ID) {
+      const result = await switchChain(CHAIN_ID);
+      if (result) {
+        localStorage.setItem('currentChainId', CHAIN_ID);
+      }
+    }
     try {
-      const walletDetails = await connectWallet();
-      if (walletDetails?.connection?.account) {
-        const walletAddress = walletDetails.connection.account.address;
+      const { connection } = await connectWallet();
+      if (connection?.account?.address !== undefined) {
+        const walletAddress = connection.account.address;
         localStorage.setItem('wallet', walletAddress);
         setConnected(true);
+        setChainId(CHAIN_ID);
       }
     } catch (err) {
       // Handle errors, such as user rejecting the connection request
@@ -36,9 +46,57 @@ export default function Home() {
     }
   };
 
+  const checkUserConnection = async () => {
+    const walletAddress = localStorage.getItem('wallet');
+    if (walletAddress !== null) {
+      setConnected(true);
+    }
+  };
+
+  const handleAccountsChanged = (accounts) => {
+    if (accounts.length === 0) {
+      // User has disconnected
+      localStorage.removeItem('wallet');
+      setConnected(false);
+    } else {
+      setConnected(true);
+    }
+  };
+
+  const handleChainChanged = (chainId) => {
+    const newChainId = Number(chainId.toString());
+    setChainId(newChainId);
+    localStorage.setItem('currentChainId', newChainId);
+    if (newChainId !== CHAIN_ID) {
+      setConnected(false);
+    }
+  };
+
   useEffect(() => {
-    getInterfaceInfo();
-  });
+    if (localStorage.getItem('wallet')) {
+      setChainId(localStorage.getItem('currentChainId') ?? null);
+      setConnected(true);
+      getInterfaceInfo();
+    }
+    setLoading(false);
+  }, [currentChainId, connected]);
+
+  useEffect(() => {
+    if (window.ethereum) {
+      checkUserConnection();
+
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      return () => {
+        window.ethereum.removeListener(
+          'accountsChanged',
+          handleAccountsChanged
+        );
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     // check if poolInfo is empty
@@ -50,8 +108,9 @@ export default function Home() {
   const getInterfaceInfo = async () => {
     if (connected) {
       const id = setInterval(async () => {
-        const poolInfo = await getPoolDetails();
-        const holderInfo = await getHolderDetails();
+        // TODO: Change before push
+        const poolInfo = {};
+        const holderInfo = {};
         setPoolInfo(poolInfo);
         setHolderInfo(holderInfo);
       }, 5000);
@@ -92,6 +151,17 @@ export default function Home() {
       const output = 'Unstaked successfully!';
       document.querySelector('#result').innerHTML = output;
     }
+  };
+
+  const disconnect = async () => {
+    localStorage.removeItem('wallet');
+    setConnected(false);
+  };
+
+  const getFormattedWalletAddress = () => {
+    return `${localStorage.getItem('wallet').slice(0, 5)}...${localStorage
+      .getItem('wallet')
+      .slice(-4)}`;
   };
 
   return (
@@ -154,17 +224,57 @@ export default function Home() {
             </nav>
             <div className="d-flex justify-content-around">
               <div className="d-flex align-items-center">
-                <button
-                  className="btn btn-success btn-sm"
-                  style={{
-                    borderRadius: '16px',
-                    whiteSpace: 'nowrap',
-                    background: 'linear-gradient(270deg, #11d617, #0752bb)',
-                  }}
-                  id="connectWallet"
-                  onClick={connect}>
-                  {connected ? 'Connected' : 'Connect Wallet'}
-                </button>
+                <div className="mi-dropdown">
+                  <button
+                    className="mi-dropbtn d-flex align-items-center connect-btn"
+                    onClick={() => !connected && connect()}>
+                    {connected ? (
+                      <>{getFormattedWalletAddress()} &nbsp;</>
+                    ) : (
+                      'Connect Wallet'
+                    )}
+
+                    {connected && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="#fff"
+                        className="bi bi-chevron-down connectArrow"
+                        viewBox="0 0 16 16">
+                        <path
+                          fillRule="evenodd"
+                          d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"
+                        />
+                      </svg>
+                    )}
+                  </button>
+
+                  {connected && (
+                    <div className="mi-dropdown-content">
+                      <div className="d-flex justify-content-center align-items-center flex-column">
+                        <img
+                          className="mini-storm"
+                          src="Storm_150x150.png"
+                          alt=""
+                        />
+                        <p>0.00 STM</p>
+                      </div>
+                      <a
+                        href=""
+                        className="btn btn-info w-100"
+                        style={{ borderRadius: '12px', fontSize: '14px' }}>
+                        Buy STM
+                      </a>
+                      <button
+                        className="btn btn-primary w-100"
+                        style={{ borderRadius: '12px', fontSize: '14px' }}
+                        onClick={disconnect}>
+                        Disconnect
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               <div id="hamburger">
                 <span></span>
@@ -210,38 +320,28 @@ export default function Home() {
                       <div className="d-flex justify-content-between">
                         <p>Reward Per Token</p>
                         <p className="fw-bold">
-                          {connected ? poolInfo.rewardPerToken : '0'}
+                          {poolInfo.rewardPerToken ?? 0}
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Available $STM</p>
-                        <p className="fw-bold">
-                          {connected ? poolInfo.userBalance : '0'}
-                        </p>
+                        <p className="fw-bold">{poolInfo.userBalance ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>My Stakings</p>
-                        <p className="fw-bold">
-                          {connected ? poolInfo.userStaked : 0}
-                        </p>
+                        <p className="fw-bold">{poolInfo.userStaked ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Pending Rewards</p>
-                        <p className="fw-bold">
-                          {connected ? poolInfo.reward : 0}
-                        </p>
+                        <p className="fw-bold">{poolInfo.reward ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Multiplier</p>
-                        <p className="fw-bold">
-                          {connected ? poolInfo.multiplier : 0}
-                        </p>
+                        <p className="fw-bold">{poolInfo.multiplier ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Total Staked</p>
-                        <p className="fw-bold">
-                          {connected ? poolInfo.totalStaked : 0}
-                        </p>
+                        <p className="fw-bold">{poolInfo.totalStaked ?? 0}</p>
                       </div>
                     </div>
 
@@ -338,15 +438,15 @@ export default function Home() {
                           {/* Stake Info */}
                           <div className="d-flex flex-column">
                             <p>Your Stakings</p>
-                            <p>{connected ? poolInfo.userStaked : 0}</p>
+                            <p>{poolInfo.userStaked ?? 0}</p>
                           </div>
                           <div className="d-flex flex-column">
                             <p>Your Earnings</p>
-                            <p>{connected ? poolInfo.reward : 0}</p>
+                            <p>{poolInfo.reward ?? 0}</p>
                           </div>
                           <div className="d-flex flex-column">
                             <p>Wallet Balance</p>
-                            <p>{connected ? poolInfo.userBalance : 0}</p>
+                            <p>{poolInfo.userBalance ?? 0}</p>
                           </div>
                         </div>
                       </div>
@@ -386,25 +486,25 @@ export default function Home() {
                       <div className="d-flex justify-content-between">
                         <p>Reward Per Day</p>
                         <p className="fw-bold">
-                          {connected ? holderInfo.rewardPerDay : 0} STM
+                          {holderInfo.rewardPerDay ?? 0} STM
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Pending Rewards</p>
                         <p className="fw-bold">
-                          {connected ? holderInfo.pendingRewards : 0} STM
+                          {holderInfo.pendingRewards ?? 0} STM
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Total Earnings</p>
                         <p className="fw-bold">
-                          {connected ? holderInfo.totalEarnings : 0} STM
+                          {holderInfo.totalEarnings ?? 0} STM
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>$STM in Wallet</p>
                         <p className="fw-bold">
-                          {connected ? poolInfo.userBalance : 0} STM
+                          {poolInfo.userBalance ?? 0} STM
                         </p>
                       </div>
                     </div>
