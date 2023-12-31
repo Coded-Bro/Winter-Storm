@@ -471,8 +471,8 @@ li.parent_menu_item.dapp_menu_item ul.child_menu li a img {
 
 }
 
-html.our_mobile_menu #connectWallet {
-  display: none;
+html.our_mobile_menu .connect-btn {
+  display: none !important;
 }
 
 html.our_mobile_menu #hamburger {

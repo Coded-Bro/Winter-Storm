@@ -1,38 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
-import "./main.scss";
-import "../styles/base.css";
-import "../styles/responsive.css";
-import Link from "next/link";
-import Head from "next/head";
-import { getPoolDetails } from "@/components/config";
-import { connectWallet } from "@/components/config";
-import { useEffect, useState } from "react";
+import './main.scss';
+import '../styles/base.css';
+import '../styles/responsive.css';
+import Head from 'next/head';
+import { useEffect } from 'react';
 
 export default function App({ Component, pageProps }) {
-  const [status, setStatus] = useState("Connect Wallet");
-
-  const connect = async () => {
-    const walletAddress = await connectWallet().then((value) => {
-      return value?.connection?.account?.address;
-    });
-    localStorage.setItem("wallet", walletAddress);
-  };
-
-  useEffect(() => {
-    setInterval(() => {
-      const walletAddress = localStorage.getItem("wallet");
-      if (walletAddress !== null) {
-        setStatus("Connected");
-      }
-    }, 5000);
-  }, []);
-
   useEffect(() => {
     // Add bootstrap js
-    require("bootstrap/dist/js/bootstrap.bundle.min.js");
+    require('bootstrap/dist/js/bootstrap.bundle.min.js');
 
     // Remove the default stylesheet
-    const styles = document.querySelector("#stitches");
+    const styles = document.querySelector('#stitches');
 
     if (styles) {
       styles.remove();
@@ -82,96 +61,18 @@ export default function App({ Component, pageProps }) {
           content="https://vault.winterstorm.finance/static/images/logo_with_words.png"
         />
       </Head>
-      <div id="wrapper" style={{ marpaginBottom: "4%" }}>
-        {/* Navbar */}
 
-        <div id="menu" className="our_nav">
-          <div className="nav_inner">
-            <nav className="storm-navbar">
-              <div className="d-flex">
-                <ul className="logo_container">
-                  <li>
-                    <div className="font_extrabold text_xl">
-                      <Link href="https://winterstorm.finance">
-                        <span className="logo">
-                          <span className="logo_image">
-                            <img src="logo_with_word.svg" alt="" />
-                          </span>
-                        </span>
-                      </Link>
-                    </div>
-                  </li>
-                </ul>
-              </div>
-
-              <span className="primary_links">
-                <ul className="menu_right">
-                  <li>
-                    <a href="https://winterstorm.finance/#about">
-                      about<span className="fillerTxt"></span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://winterstorm.finance/#tokenomics">
-                      TOKENOMICS
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://winterstorm.finance/#roadmap">
-                      ROAD MAP<span className="fillerTxt"></span>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://winterstorm.finance/#community">
-                      Community
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://docs.winterstorm.finance/" target="_blank">
-                      WHITEPAPER
-                    </a>
-                  </li>
-                </ul>
-              </span>
-            </nav>
-            <div className="d-flex justify-content-around">
-              <div className="d-flex align-items-center">
-                <button
-                  className="btn btn-success btn-sm"
-                  style={{
-                    borderRadius: "16px",
-                    whiteSpace: "nowrap",
-                    background: "linear-gradient(270deg, #11d617, #0752bb)",
-                  }}
-                  id="connectWallet"
-                  onClick={connect}
-                >
-                  {status}
-                </button>
-              </div>
-              <div id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span>Menu</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <Component {...pageProps} />
-      </div>
+      <Component {...pageProps} />
 
       <footer className="footer">
         {/* Subscribe Form */}
         <section id="subscribe" className="subscribe_section global_outer">
           <div className="subscribe_global_inner global_inner">
             <div className="subscribe_content">
-              <h2 id="community" style={{ fontFamily: "Iceberg" }}>
+              <h2 id="community" style={{ fontFamily: 'Iceberg' }}>
                 Join The Community!
               </h2>
-              <p style={{ fontFamily: "Iceberg" }}>
+              <p style={{ fontFamily: 'Iceberg' }}>
                 Follow us on our Official Channels to never miss important
                 updates and announcements!
               </p>
@@ -181,8 +82,7 @@ export default function App({ Component, pageProps }) {
                     <div className="social_icon_list flex flex_wrap justify_center mt_3">
                       <a
                         target="_blank"
-                        href="https://discord.com/invite/ZBcywm82S6"
-                      >
+                        href="https://discord.com/invite/ZBcywm82S6">
                         <img src="discord.png" alt="" />
                       </a>
                       <a target="_blank" href="https://t.me/Winter_Storm">
@@ -190,8 +90,7 @@ export default function App({ Component, pageProps }) {
                       </a>
                       <a
                         target="_blank"
-                        href="https://twitter.com/intent/follow?screen_name=WinterStorm_Fi"
-                      >
+                        href="https://twitter.com/intent/follow?screen_name=WinterStorm_Fi">
                         <img src="x1.png" alt="" />
                       </a>
                     </div>
@@ -212,8 +111,7 @@ export default function App({ Component, pageProps }) {
                   <div className="social_icon_list flex flex_wrap justify_center mt_3">
                     <a
                       target="_blank"
-                      href="https://discord.com/invite/ZBcywm82S6"
-                    >
+                      href="https://discord.com/invite/ZBcywm82S6">
                       <img src="discord.png" alt="" />
                     </a>
                     <a target="_blank" href="https://t.me/Winter_Storm">
@@ -221,8 +119,7 @@ export default function App({ Component, pageProps }) {
                     </a>
                     <a
                       target="_blank"
-                      href="https://twitter.com/intent/follow?screen_name=WinterStorm_Fi"
-                    >
+                      href="https://twitter.com/intent/follow?screen_name=WinterStorm_Fi">
                       <img src="x1.png" alt="" />
                     </a>
                   </div>
@@ -231,8 +128,7 @@ export default function App({ Component, pageProps }) {
             </div>
             <div
               className="copyright"
-              style={{ paddingTop: "4%", color: "#fff" }}
-            >
+              style={{ paddingTop: '4%', color: '#fff' }}>
               &copy; Copyright 2023-2025 Winter Storm. All Rights Reserved.
             </div>
           </div>
