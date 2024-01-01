@@ -48,13 +48,6 @@ export default function Home() {
     }
   };
 
-  const checkUserConnection = async () => {
-    const walletAddress = localStorage.getItem('wallet');
-    if (walletAddress !== null) {
-      setConnected(true);
-    }
-  };
-
   const handleAccountsChanged = (accounts) => {
     if (accounts.length === 0) {
       // User has disconnected
@@ -74,55 +67,21 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    if (localStorage.getItem('wallet')) {
-      setChainId(localStorage.getItem('currentChainId') ?? null);
-      setConnected(true);
-      getInterfaceInfo();
-    }
-    setLoading(false);
-  }, [currentChainId, connected]);
-
-  useEffect(() => {
-    if (window.ethereum) {
-      checkUserConnection();
-
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-
-      return () => {
-        window.ethereum.removeListener(
-          'accountsChanged',
-          handleAccountsChanged
-        );
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
-      };
-    }
-  }, []);
-
-  useEffect(() => {
-    // check if poolInfo is empty
-    if (Object.keys(poolInfo).length !== 0) {
-      setLoading(false);
-    }
-  }, [poolInfo]);
-
   const getInterfaceInfo = async () => {
-    if (connected) {
-      const id = setInterval(async () => {
-        // TODO: Change before push
-        const poolInfo = {};
-        const holderInfo = {};
-        setPoolInfo(poolInfo);
-        setHolderInfo(holderInfo);
-      }, 5000);
+    const id = setInterval(async () => {
+      const fetchData = async () => {
+        if (localStorage.getItem('wallet')) {
+          const poolDetails = await getPoolDetails();
+          const holderDetails = await getHolderDetails();
+          setPoolInfo(poolDetails);
+          setHolderInfo(holderDetails);
+        }
+      };
 
-      setInfoIntervalId(id);
-    } else if (!connected && infoIntervalId) {
-      clearInterval(infoIntervalId);
-    } else {
-      setLoading(false);
-    }
+      await fetchData().then((_) => setLoading(false));
+    }, 3000);
+
+    setInfoIntervalId(id);
   };
 
   const handleInputChange = (e) => {
@@ -167,6 +126,33 @@ export default function Home() {
           .slice(-4)}`
       : '0x0...00';
   };
+
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      return () => {
+        window.ethereum.removeListener(
+          'accountsChanged',
+          handleAccountsChanged
+        );
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    if (localStorage.getItem('wallet')) {
+      setChainId(localStorage.getItem('currentChainId') ?? CHAIN_ID);
+      setConnected(true);
+      getInterfaceInfo();
+    } else if (infoIntervalId) {
+      clearInterval(infoIntervalId);
+    } else {
+      setLoading(false);
+    }
+  }, [currentChainId, connected]);
 
   return (
     <>
@@ -322,28 +308,28 @@ export default function Home() {
                       <div className="d-flex justify-content-between">
                         <p>Reward Per Token</p>
                         <p className="fw-bold">
-                          {poolInfo.rewardPerToken ?? 0}
+                          {poolInfo?.rewardPerToken ?? 0}
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Available $STM</p>
-                        <p className="fw-bold">{poolInfo.userBalance ?? 0}</p>
+                        <p className="fw-bold">{poolInfo?.userBalance ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>My Stakings</p>
-                        <p className="fw-bold">{poolInfo.userStaked ?? 0}</p>
+                        <p className="fw-bold">{poolInfo?.userStaked ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Pending Rewards</p>
-                        <p className="fw-bold">{poolInfo.reward ?? 0}</p>
+                        <p className="fw-bold">{poolInfo?.reward ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Multiplier</p>
-                        <p className="fw-bold">{poolInfo.multiplier ?? 0}</p>
+                        <p className="fw-bold">{poolInfo?.multiplier ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Total Staked</p>
-                        <p className="fw-bold">{poolInfo.totalStaked ?? 0}</p>
+                        <p className="fw-bold">{poolInfo?.totalStaked ?? 0}</p>
                       </div>
                     </div>
 
@@ -484,35 +470,37 @@ export default function Home() {
                   <div className="operate">
                     <div className="stake-info w-100">
                       <div className="d-flex justify-content-between">
-                        <p>Reward Per Day</p>
+                        <p>Accumulated Points</p>
                         <p className="fw-bold">
-                          {holderInfo.rewardPerDay ?? 0} STM
+                          {holderInfo?.rewardPerDay ?? 0} PTS
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Pending Rewards</p>
                         <p className="fw-bold">
-                          {holderInfo.pendingRewards ?? 0} STM
+                          {holderInfo?.pendingRewards ?? 0} STM
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
-                        <p>Total Earnings</p>
+                        <p>Blocks till next Blizzard</p>
                         <p className="fw-bold">
-                          {holderInfo.totalEarnings ?? 0} STM
+                          {holderInfo?.totalEarnings ?? 0} BLOCKS
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>$STM in Wallet</p>
                         <p className="fw-bold">
-                          {poolInfo.userBalance ?? 0} STM
+                          {poolInfo?.userBalance ?? 0} STM
                         </p>
                       </div>
                     </div>
 
                     <div className="storm_btns mt-3">
+                      <button className="btn btn-primary" disabled={!connected}>
+                        Update
+                      </button>
                       <button
-                        className="btn btn-primary"
-                        onClick={getHolderDetails}
+                        className="btn btn-outline-primary"
                         disabled={!connected}>
                         Claim Rewards
                       </button>

@@ -5,9 +5,9 @@ import stormStakeABI from './stormStakeABI.json';
 import holderBonusABI from './holderBonusABI.json';
 import { ethers } from 'ethers';
 
-const stormStakeAddr = '0x29cc28f60F5405Ffd7949DDf4FB698b4427223ab';
+const stormStakeAddr = '0xC120Cf83c4426B9567f4dEa9556f5E47000CFC6A';
 
-const holderBonusAddr = '0x73c29475088b472d5ecc98bcd52e7f25db2939ff';
+const holderBonusAddr = '0x2F1f8d725c90aAEBBfbE575c4BBfE190D9999B4c';
 
 const web3Provider = async () => {
   const [account] = await window.ethereum.request({
@@ -152,6 +152,8 @@ export const getHolderDetails = async () => {
 
   const holderInfo = await holderContract?.getUserView(userWalletAddress);
 
+  console.log(holderInfo);
+
   const holderStats = {
     rewardPerDay: Number(
       await convertToEth(null, holderInfo[0].toString())
@@ -164,7 +166,7 @@ export const getHolderDetails = async () => {
     ).toFixed('2'),
   };
 
-  return holderStats;
+  // return holderStats;
 };
 
 export const switchChain = async (targetChainId) => {
