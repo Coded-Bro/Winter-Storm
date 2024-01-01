@@ -10,6 +10,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { connectWallet } from '@/components/config';
 import { switchChain } from '@/components/config';
+import Skeleton from 'react-loading-skeleton';
+import StormCardSkeleton from '@/components/StormCardSkeleton';
 
 // TODO: Implement shimmer loading
 
@@ -159,9 +161,11 @@ export default function Home() {
   };
 
   const getFormattedWalletAddress = () => {
-    return `${localStorage.getItem('wallet').slice(0, 5)}...${localStorage
-      .getItem('wallet')
-      .slice(-4)}`;
+    return localStorage.getItem('wallet')
+      ? `${localStorage.getItem('wallet').slice(0, 5)}...${localStorage
+          .getItem('wallet')
+          .slice(-4)}`
+      : '0x0...00';
   };
 
   return (
@@ -170,7 +174,7 @@ export default function Home() {
         <title>Stake & Hold Storm</title>
       </Head>
 
-      <div id="wrapper" style={{ marpaginBottom: '4%' }}>
+      <div id="wrapper" style={{ marginBottom: '4%' }}>
         {/* Navbar */}
 
         <div id="menu" className="our_nav">
@@ -180,7 +184,7 @@ export default function Home() {
                 <ul className="logo_container">
                   <li>
                     <div className="font_extrabold text_xl">
-                      <Link href="https://winterstorm.finance">
+                      <Link href="/">
                         <span className="logo">
                           <span className="logo_image">
                             <img src="logo_with_word.svg" alt="" />
@@ -301,9 +305,7 @@ export default function Home() {
             </div>
 
             {loading ? (
-              <div className="d-flex display-4 text-light justify-content-center align-items-center">
-                <p>Loading...</p>
-              </div>
+              <StormCardSkeleton />
             ) : (
               <div className="column d-flex justify-content-center position-relative">
                 <div className="storm_main">
@@ -468,9 +470,7 @@ export default function Home() {
             </div>
             <div className="column d-flex justify-content-center">
               {loading ? (
-                <div className="d-flex display-4 text-light justify-content-center align-items-center">
-                  <p>Loading...</p>
-                </div>
+                <StormCardSkeleton lineCount={4} />
               ) : (
                 <div className="storm_main">
                   <div className="storm_title d-flex align-items-center">
