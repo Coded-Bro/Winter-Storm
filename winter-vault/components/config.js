@@ -33,8 +33,12 @@ const convertToEth = async (type, value) => {
       return Number(ethers.utils.formatUnits(value, 27)).toFixed(2);
     default:
       // Convert from Wei to ether
-      return Number(ethers.utils.formatEther(value)).toFixed(2);
+      return Number(ethers.utils.formatEther(value));
   }
+};
+
+const convertToWei = async (value) => {
+  return ethers.utils.parseEther(value);
 };
 
 export async function connectWallet() {
@@ -93,15 +97,28 @@ export const getPoolDetails = async () => {
   const userStaked = Number(
     await convertToEth('szabo', userStakedArray['amount'].toString())
   );
+  const totalStaked = tokenBalances.pool.toFixed('2');
+
+  const stmPerBlockRaw = await stormStakeContract.stmPerBlock();
+  const stmPerBlock = Number(
+    await convertToEth(null, stmPerBlockRaw.toString())
+  ).toFixed('2');
+  const blocksPerYear = 6400 * 365;
+  const annualRewards = stmPerBlock * blocksPerYear;
+
+  const apr = annualRewards / totalStaked / 100;
+  const n = 2;
+  const apy = ((1 + apr / n) ** n - 1).toFixed(2);
 
   const poolStats = {
-    totalStaked: tokenBalances.pool,
-    rewardPerToken: rewardPerToken,
+    totalStaked,
     userStaked: userStaked,
     reward: userReward,
     multiplier: bonusMultiplier,
-    userBalance: tokenBalances.user,
+    userBalance: tokenBalances.user.toFixed('2'),
     tokenAddress: tokenAddress,
+    apr: apr.toFixed(2),
+    apy,
   };
 
   return poolStats;
@@ -161,7 +178,7 @@ export const getHolderDetails = async () => {
     ).toFixed('2'),
     pendingRewards: Number(
       await convertToEth(null, holderInfo[2].toString())
-    ).toFixed('2'),
+    ).toFixed('4'),
     blocksTillNextBlizzard: Number(holderInfo[3].toString()),
   };
 

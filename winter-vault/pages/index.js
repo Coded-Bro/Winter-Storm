@@ -336,10 +336,14 @@ export default function Home() {
                   <div className="operate">
                     <div className="stake-info w-100">
                       <div className="d-flex justify-content-between">
-                        <p>Reward Per Token</p>
-                        <p className="fw-bold">
-                          {poolInfo.rewardPerToken ?? 0}
-                        </p>
+                        <div className="d-flex">
+                          <p>APR&nbsp;</p>
+                          <p className="fw-bold">{poolInfo.apr ?? 0}%</p>
+                        </div>
+                        <div className="d-flex">
+                          <p>APY&nbsp;</p>
+                          <p className="fw-bold">{poolInfo.apy ?? 0}%</p>
+                        </div>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Available $STM</p>
@@ -508,7 +512,7 @@ export default function Home() {
                       <div className="d-flex justify-content-between">
                         <p>Pending Rewards</p>
                         <p className="fw-bold">
-                          {holderInfo.pendingRewards ?? 0} STM
+                          {holderInfo.pendingRewards ?? 0} ETH
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
@@ -530,7 +534,7 @@ export default function Home() {
                         className="btn btn-primary"
                         onClick={updateHolder}
                         disabled={!connected}>
-                        Update
+                        Update Points
                       </button>
                       <button
                         className="btn btn-outline-primary"
