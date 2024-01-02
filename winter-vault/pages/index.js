@@ -2,18 +2,17 @@
 import {
   action,
   autoCompound,
+  claimHolderRewards,
   getHolderDetails,
   getPoolDetails,
+  updateHolderRewards,
 } from '@/components/config';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { connectWallet } from '@/components/config';
 import { switchChain } from '@/components/config';
-import Skeleton from 'react-loading-skeleton';
 import StormCardSkeleton from '@/components/StormCardSkeleton';
-
-// TODO: Implement shimmer loading
 
 const CHAIN_ID = 5;
 
@@ -41,6 +40,7 @@ export default function Home() {
         localStorage.setItem('wallet', walletAddress);
         setConnected(true);
         setChainId(CHAIN_ID);
+        setLoading(true);
       }
     } catch (err) {
       // Handle errors, such as user rejecting the connection request
@@ -71,10 +71,14 @@ export default function Home() {
     const id = setInterval(async () => {
       const fetchData = async () => {
         if (localStorage.getItem('wallet')) {
-          const poolDetails = await getPoolDetails();
-          const holderDetails = await getHolderDetails();
-          setPoolInfo(poolDetails);
-          setHolderInfo(holderDetails);
+          try {
+            const poolDetails = await getPoolDetails();
+            const holderDetails = await getHolderDetails();
+            setPoolInfo(poolDetails);
+            setHolderInfo(holderDetails);
+          } catch (err) {
+            console.log(err);
+          }
         }
       };
 
@@ -117,6 +121,32 @@ export default function Home() {
   const disconnect = async () => {
     localStorage.removeItem('wallet');
     setConnected(false);
+    setPoolInfo({});
+    setHolderInfo({});
+  };
+
+  const updateHolder = async (e) => {
+    e.target.disabled = true;
+
+    try {
+      await updateHolderRewards();
+    } catch (err) {
+      console.log(err);
+    }
+
+    e.target.disabled = false;
+  };
+
+  const claimForHolder = async (e) => {
+    e.target.disabled = true;
+
+    try {
+      await claimHolderRewards();
+    } catch (err) {
+      console.log(err);
+    }
+
+    e.target.disabled = false;
   };
 
   const getFormattedWalletAddress = () => {
@@ -308,28 +338,28 @@ export default function Home() {
                       <div className="d-flex justify-content-between">
                         <p>Reward Per Token</p>
                         <p className="fw-bold">
-                          {poolInfo?.rewardPerToken ?? 0}
+                          {poolInfo.rewardPerToken ?? 0}
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Available $STM</p>
-                        <p className="fw-bold">{poolInfo?.userBalance ?? 0}</p>
+                        <p className="fw-bold">{poolInfo.userBalance ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>My Stakings</p>
-                        <p className="fw-bold">{poolInfo?.userStaked ?? 0}</p>
+                        <p className="fw-bold">{poolInfo.userStaked ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Pending Rewards</p>
-                        <p className="fw-bold">{poolInfo?.reward ?? 0}</p>
+                        <p className="fw-bold">{poolInfo.reward ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Multiplier</p>
-                        <p className="fw-bold">{poolInfo?.multiplier ?? 0}</p>
+                        <p className="fw-bold">{poolInfo.multiplier ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Total Staked</p>
-                        <p className="fw-bold">{poolInfo?.totalStaked ?? 0}</p>
+                        <p className="fw-bold">{poolInfo.totalStaked ?? 0}</p>
                       </div>
                     </div>
 
@@ -472,35 +502,39 @@ export default function Home() {
                       <div className="d-flex justify-content-between">
                         <p>Accumulated Points</p>
                         <p className="fw-bold">
-                          {holderInfo?.rewardPerDay ?? 0} PTS
+                          {holderInfo.accumulatedPoints ?? 0} PTS
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Pending Rewards</p>
                         <p className="fw-bold">
-                          {holderInfo?.pendingRewards ?? 0} STM
+                          {holderInfo.pendingRewards ?? 0} STM
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Blocks till next Blizzard</p>
                         <p className="fw-bold">
-                          {holderInfo?.totalEarnings ?? 0} BLOCKS
+                          {holderInfo.blocksTillNextBlizzard ?? 0} BLOCKS
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>$STM in Wallet</p>
                         <p className="fw-bold">
-                          {poolInfo?.userBalance ?? 0} STM
+                          {holderInfo.tokenBalance ?? 0} STM
                         </p>
                       </div>
                     </div>
 
                     <div className="storm_btns mt-3">
-                      <button className="btn btn-primary" disabled={!connected}>
+                      <button
+                        className="btn btn-primary"
+                        onClick={updateHolder}
+                        disabled={!connected}>
                         Update
                       </button>
                       <button
                         className="btn btn-outline-primary"
+                        onClick={claimForHolder}
                         disabled={!connected}>
                         Claim Rewards
                       </button>

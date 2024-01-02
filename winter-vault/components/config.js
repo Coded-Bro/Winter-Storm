@@ -24,17 +24,17 @@ const web3Provider = async () => {
 };
 
 const convertToEth = async (type, value) => {
-  if (type === 'reward') {
-    // Covert Szabo to ether
-    return Number(ethers.utils.formatEther(value)).toFixed(8);
-  } else {
-    // Convert from Wei to ether
-    return Number(ethers.utils.formatEther(value)).toFixed(2);
+  switch (type) {
+    case 'szabo':
+      // Covert Szabo to ether
+      return Number(ethers.utils.formatEther(value)).toFixed(8);
+    case 'gether':
+      // Convert from wei to gether
+      return Number(ethers.utils.formatUnits(value, 27)).toFixed(2);
+    default:
+      // Convert from Wei to ether
+      return Number(ethers.utils.formatEther(value)).toFixed(2);
   }
-};
-
-const convertToWei = async (value) => {
-  return ethers.utils.parseEther(value);
 };
 
 export async function connectWallet() {
@@ -46,8 +46,13 @@ export async function connectWallet() {
     stormStakeABI,
     signer
   );
+  const holderContract = new ethers.Contract(
+    holderBonusAddr,
+    holderBonusABI,
+    signer
+  );
 
-  return { connection, signer, stormStakeContract };
+  return { connection, signer, stormStakeContract, holderContract };
 }
 
 export const fetchTokenBalance = async (tokenAddress, userWalletAddress) => {
@@ -82,11 +87,11 @@ export const getPoolDetails = async () => {
   const bonusMultiplier = (
     await stormStakeContract?.BONUS_MULTIPLIER()
   ).toString();
-  const userReward = Number(
-    await convertToEth('reward', userRewardRaw)
-  ).toFixed('2');
+  const userReward = Number(await convertToEth('szabo', userRewardRaw)).toFixed(
+    '2'
+  );
   const userStaked = Number(
-    await convertToEth('reward', userStakedArray['amount'].toString())
+    await convertToEth('szabo', userStakedArray['amount'].toString())
   );
 
   const poolStats = {
@@ -142,31 +147,25 @@ export const autoCompound = async () => {
 };
 
 export const getHolderDetails = async () => {
-  const { signer, connection } = await connectWallet();
+  const { connection, holderContract } = await connectWallet();
   const userWalletAddress = connection?.account?.address;
-  const holderContract = new ethers.Contract(
-    holderBonusAddr,
-    holderBonusABI,
-    signer
-  );
 
   const holderInfo = await holderContract?.getUserView(userWalletAddress);
 
-  console.log(holderInfo);
-
   const holderStats = {
-    rewardPerDay: Number(
+    tokenBalance: Number(
       await convertToEth(null, holderInfo[0].toString())
+    ).toFixed('2'),
+    accumulatedPoints: Number(
+      await convertToEth('gether', holderInfo[1].toString())
     ).toFixed('2'),
     pendingRewards: Number(
       await convertToEth(null, holderInfo[2].toString())
     ).toFixed('2'),
-    totalEarnings: Number(
-      await convertToEth(null, holderInfo[3].toString())
-    ).toFixed('2'),
+    blocksTillNextBlizzard: Number(holderInfo[3].toString()),
   };
 
-  // return holderStats;
+  return holderStats;
 };
 
 export const switchChain = async (targetChainId) => {
@@ -206,4 +205,19 @@ export const switchChain = async (targetChainId) => {
       return result;
     }
   }
+};
+
+export const updateHolderRewards = async () => {
+  const { connection, holderContract } = await connectWallet();
+  const userWalletAddress = connection?.account?.address;
+
+  return await holderContract
+    ?.updatePoints(userWalletAddress)
+    .then((_) => true);
+};
+
+export const claimHolderRewards = async () => {
+  const { holderContract } = await connectWallet();
+
+  return await holderContract?.claim().then((_) => true);
 };
