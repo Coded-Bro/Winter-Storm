@@ -14,6 +14,7 @@ import { connectWallet } from '@/components/config';
 import { switchChain } from '@/components/config';
 import StormCardSkeleton from '@/components/StormCardSkeleton';
 import ConfettiExplosion from 'react-confetti-explosion';
+import { info } from 'sass';
 
 const CHAIN_ID = 5;
 
@@ -194,7 +195,7 @@ export default function Home() {
     } else {
       setLoading(false);
     }
-  }, [currentChainId, connected]);
+  }, [currentChainId, connected, infoIntervalId]);
 
   return (
     <>
