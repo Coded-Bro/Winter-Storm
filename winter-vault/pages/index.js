@@ -195,7 +195,7 @@ export default function Home() {
     } else {
       setLoading(false);
     }
-  }, [currentChainId, connected, infoIntervalId]);
+  }, [currentChainId, connected]);
 
   return (
     <>
@@ -291,7 +291,7 @@ export default function Home() {
                           src="Storm_150x150.png"
                           alt=""
                         />
-                        <p>0.00 STM</p>
+                        <p>{holderInfo?.tokenBalance ?? 0} STM</p>
                       </div>
                       <a
                         href=""
