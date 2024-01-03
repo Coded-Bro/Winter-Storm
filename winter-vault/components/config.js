@@ -5,9 +5,9 @@ import stormStakeABI from './stormStakeABI.json';
 import holderBonusABI from './holderBonusABI.json';
 import { ethers } from 'ethers';
 
-const stormStakeAddr = '0x29cc28f60F5405Ffd7949DDf4FB698b4427223ab';
+const stormStakeAddr = '0xC120Cf83c4426B9567f4dEa9556f5E47000CFC6A';
 
-const holderBonusAddr = '0x73c29475088b472d5ecc98bcd52e7f25db2939ff';
+const holderBonusAddr = '0x2F1f8d725c90aAEBBfbE575c4BBfE190D9999B4c';
 
 const web3Provider = async () => {
   const [account] = await window.ethereum.request({
@@ -24,12 +24,16 @@ const web3Provider = async () => {
 };
 
 const convertToEth = async (type, value) => {
-  if (type === 'reward') {
-    // Covert Szabo to ether
-    return Number(ethers.utils.formatEther(value)).toFixed(8);
-  } else {
-    // Convert from Wei to ether
-    return Number(ethers.utils.formatEther(value)).toFixed(2);
+  switch (type) {
+    case 'szabo':
+      // Covert Szabo to ether
+      return Number(ethers.utils.formatEther(value)).toFixed(8);
+    case 'gether':
+      // Convert from wei to gether
+      return Number(ethers.utils.formatUnits(value, 27)).toFixed(2);
+    default:
+      // Convert from Wei to ether
+      return Number(ethers.utils.formatEther(value));
   }
 };
 
@@ -46,8 +50,13 @@ export async function connectWallet() {
     stormStakeABI,
     signer
   );
+  const holderContract = new ethers.Contract(
+    holderBonusAddr,
+    holderBonusABI,
+    signer
+  );
 
-  return { connection, signer, stormStakeContract };
+  return { connection, signer, stormStakeContract, holderContract };
 }
 
 export const fetchTokenBalance = async (tokenAddress, userWalletAddress) => {
@@ -82,20 +91,20 @@ export const getPoolDetails = async () => {
   const bonusMultiplier = (
     await stormStakeContract?.BONUS_MULTIPLIER()
   ).toString();
-  const userReward = Number(
-    await convertToEth('reward', userRewardRaw)
-  ).toFixed('2');
-  const userStaked = Number(
-    await convertToEth('reward', userStakedArray['amount'].toString())
+  const userReward = Number(await convertToEth('szabo', userRewardRaw)).toFixed(
+    '2'
   );
+  const userStaked = Number(
+    await convertToEth('szabo', userStakedArray['amount'].toString())
+  );
+  const totalStaked = tokenBalances.pool.toFixed('2');
 
   const poolStats = {
-    totalStaked: tokenBalances.pool,
-    rewardPerToken: rewardPerToken,
+    totalStaked,
     userStaked: userStaked,
     reward: userReward,
     multiplier: bonusMultiplier,
-    userBalance: tokenBalances.user,
+    userBalance: tokenBalances.user.toFixed('2'),
     tokenAddress: tokenAddress,
   };
 
@@ -142,26 +151,22 @@ export const autoCompound = async () => {
 };
 
 export const getHolderDetails = async () => {
-  const { signer, connection } = await connectWallet();
+  const { connection, holderContract } = await connectWallet();
   const userWalletAddress = connection?.account?.address;
-  const holderContract = new ethers.Contract(
-    holderBonusAddr,
-    holderBonusABI,
-    signer
-  );
 
   const holderInfo = await holderContract?.getUserView(userWalletAddress);
 
   const holderStats = {
-    rewardPerDay: Number(
+    tokenBalance: Number(
       await convertToEth(null, holderInfo[0].toString())
+    ).toFixed('2'),
+    accumulatedPoints: Number(
+      await convertToEth('gether', holderInfo[1].toString())
     ).toFixed('2'),
     pendingRewards: Number(
       await convertToEth(null, holderInfo[2].toString())
-    ).toFixed('2'),
-    totalEarnings: Number(
-      await convertToEth(null, holderInfo[3].toString())
-    ).toFixed('2'),
+    ).toFixed('4'),
+    blocksTillNextBlizzard: Number(holderInfo[3].toString()),
   };
 
   return holderStats;
@@ -204,4 +209,19 @@ export const switchChain = async (targetChainId) => {
       return result;
     }
   }
+};
+
+export const updateHolderRewards = async () => {
+  const { connection, holderContract } = await connectWallet();
+  const userWalletAddress = connection?.account?.address;
+
+  return await holderContract
+    ?.updatePoints(userWalletAddress)
+    .then((_) => true);
+};
+
+export const claimHolderRewards = async () => {
+  const { holderContract } = await connectWallet();
+
+  return await holderContract?.claim().then((_) => true);
 };

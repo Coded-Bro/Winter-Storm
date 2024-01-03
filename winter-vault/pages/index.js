@@ -2,16 +2,19 @@
 import {
   action,
   autoCompound,
+  claimHolderRewards,
   getHolderDetails,
   getPoolDetails,
+  updateHolderRewards,
 } from '@/components/config';
 import Head from 'next/head';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { connectWallet } from '@/components/config';
 import { switchChain } from '@/components/config';
-
-// TODO: Implement shimmer loading
+import StormCardSkeleton from '@/components/StormCardSkeleton';
+import ConfettiExplosion from 'react-confetti-explosion';
+import { info } from 'sass';
 
 const CHAIN_ID = 5;
 
@@ -24,6 +27,15 @@ export default function Home() {
   const [infoIntervalId, setInfoIntervalId] = useState(null);
   const [connected, setConnected] = useState(false);
   const [currentChainId, setChainId] = useState(null);
+  const [isExploding, setIsExploding] = useState(false);
+
+  const largeConfetti = {
+    force: 0.8,
+    duration: 3000,
+    particleCount: 300,
+    width: 1600,
+    colors: ['#041E43', '#1471BF', '#5BB4DC', '#FC027B', '#66D805'],
+  };
 
   const connect = async () => {
     if (currentChainId !== CHAIN_ID) {
@@ -39,17 +51,11 @@ export default function Home() {
         localStorage.setItem('wallet', walletAddress);
         setConnected(true);
         setChainId(CHAIN_ID);
+        setLoading(true);
       }
     } catch (err) {
       // Handle errors, such as user rejecting the connection request
       console.error('Connection request was rejected by the user.', err);
-    }
-  };
-
-  const checkUserConnection = async () => {
-    const walletAddress = localStorage.getItem('wallet');
-    if (walletAddress !== null) {
-      setConnected(true);
     }
   };
 
@@ -72,55 +78,25 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    if (localStorage.getItem('wallet')) {
-      setChainId(localStorage.getItem('currentChainId') ?? null);
-      setConnected(true);
-      getInterfaceInfo();
-    }
-    setLoading(false);
-  }, [currentChainId, connected]);
-
-  useEffect(() => {
-    if (window.ethereum) {
-      checkUserConnection();
-
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-
-      return () => {
-        window.ethereum.removeListener(
-          'accountsChanged',
-          handleAccountsChanged
-        );
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
-      };
-    }
-  }, []);
-
-  useEffect(() => {
-    // check if poolInfo is empty
-    if (Object.keys(poolInfo).length !== 0) {
-      setLoading(false);
-    }
-  }, [poolInfo]);
-
   const getInterfaceInfo = async () => {
-    if (connected) {
-      const id = setInterval(async () => {
-        // TODO: Change before push
-        const poolInfo = {};
-        const holderInfo = {};
-        setPoolInfo(poolInfo);
-        setHolderInfo(holderInfo);
-      }, 5000);
+    const id = setInterval(async () => {
+      const fetchData = async () => {
+        if (localStorage.getItem('wallet')) {
+          try {
+            const poolDetails = await getPoolDetails();
+            const holderDetails = await getHolderDetails();
+            setPoolInfo(poolDetails);
+            setHolderInfo(holderDetails);
+          } catch (err) {
+            console.log(err);
+          }
+        }
+      };
 
-      setInfoIntervalId(id);
-    } else if (!connected && infoIntervalId) {
-      clearInterval(infoIntervalId);
-    } else {
-      setLoading(false);
-    }
+      await fetchData().then((_) => setLoading(false));
+    }, 3000);
+
+    setInfoIntervalId(id);
   };
 
   const handleInputChange = (e) => {
@@ -156,13 +132,70 @@ export default function Home() {
   const disconnect = async () => {
     localStorage.removeItem('wallet');
     setConnected(false);
+    setPoolInfo({});
+    setHolderInfo({});
+  };
+
+  const updateHolder = async (e) => {
+    e.target.disabled = true;
+
+    try {
+      await updateHolderRewards();
+    } catch (err) {
+      console.log(err);
+    }
+
+    e.target.disabled = false;
+  };
+
+  const claimForHolder = async (e) => {
+    e.target.disabled = true;
+
+    try {
+      await claimHolderRewards().then((_) => setIsExploding(true));
+
+      setTimeout(() => setIsExploding(false), 3000);
+    } catch (err) {
+      console.log(err);
+    }
+
+    e.target.disabled = false;
   };
 
   const getFormattedWalletAddress = () => {
-    return `${localStorage.getItem('wallet').slice(0, 5)}...${localStorage
-      .getItem('wallet')
-      .slice(-4)}`;
+    return localStorage.getItem('wallet')
+      ? `${localStorage.getItem('wallet').slice(0, 5)}...${localStorage
+          .getItem('wallet')
+          .slice(-4)}`
+      : '0x0...00';
   };
+
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      return () => {
+        window.ethereum.removeListener(
+          'accountsChanged',
+          handleAccountsChanged
+        );
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, []);
+
+  useEffect(() => {
+    if (localStorage.getItem('wallet')) {
+      setChainId(localStorage.getItem('currentChainId') ?? CHAIN_ID);
+      setConnected(true);
+      getInterfaceInfo();
+    } else if (infoIntervalId) {
+      clearInterval(infoIntervalId);
+    } else {
+      setLoading(false);
+    }
+  }, [currentChainId, connected, infoIntervalId]);
 
   return (
     <>
@@ -170,7 +203,7 @@ export default function Home() {
         <title>Stake & Hold Storm</title>
       </Head>
 
-      <div id="wrapper" style={{ marpaginBottom: '4%' }}>
+      <div id="wrapper" style={{ marginBottom: '4%' }}>
         {/* Navbar */}
 
         <div id="menu" className="our_nav">
@@ -180,7 +213,7 @@ export default function Home() {
                 <ul className="logo_container">
                   <li>
                     <div className="font_extrabold text_xl">
-                      <Link href="https://winterstorm.finance">
+                      <Link href="/">
                         <span className="logo">
                           <span className="logo_image">
                             <img src="logo_with_word.svg" alt="" />
@@ -301,9 +334,7 @@ export default function Home() {
             </div>
 
             {loading ? (
-              <div className="d-flex display-4 text-light justify-content-center align-items-center">
-                <p>Loading...</p>
-              </div>
+              <StormCardSkeleton />
             ) : (
               <div className="column d-flex justify-content-center position-relative">
                 <div className="storm_main">
@@ -318,10 +349,8 @@ export default function Home() {
                   <div className="operate">
                     <div className="stake-info w-100">
                       <div className="d-flex justify-content-between">
-                        <p>Reward Per Token</p>
-                        <p className="fw-bold">
-                          {poolInfo.rewardPerToken ?? 0}
-                        </p>
+                        <p>APY&nbsp;</p>
+                        <p className="fw-bold">100% &#126; 400%</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Available $STM</p>
@@ -468,9 +497,7 @@ export default function Home() {
             </div>
             <div className="column d-flex justify-content-center">
               {loading ? (
-                <div className="d-flex display-4 text-light justify-content-center align-items-center">
-                  <p>Loading...</p>
-                </div>
+                <StormCardSkeleton lineCount={4} />
               ) : (
                 <div className="storm_main">
                   <div className="storm_title d-flex align-items-center">
@@ -484,27 +511,27 @@ export default function Home() {
                   <div className="operate">
                     <div className="stake-info w-100">
                       <div className="d-flex justify-content-between">
-                        <p>Reward Per Day</p>
+                        <p>Accumulated Points</p>
                         <p className="fw-bold">
-                          {holderInfo.rewardPerDay ?? 0} STM
+                          {holderInfo.accumulatedPoints ?? 0} PTS
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Pending Rewards</p>
                         <p className="fw-bold">
-                          {holderInfo.pendingRewards ?? 0} STM
+                          {holderInfo.pendingRewards ?? 0} ETH
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
-                        <p>Total Earnings</p>
+                        <p>Blocks till next Blizzard</p>
                         <p className="fw-bold">
-                          {holderInfo.totalEarnings ?? 0} STM
+                          {holderInfo.blocksTillNextBlizzard ?? 0} BLOCKS
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>$STM in Wallet</p>
                         <p className="fw-bold">
-                          {poolInfo.userBalance ?? 0} STM
+                          {holderInfo.tokenBalance ?? 0} STM
                         </p>
                       </div>
                     </div>
@@ -512,8 +539,17 @@ export default function Home() {
                     <div className="storm_btns mt-3">
                       <button
                         className="btn btn-primary"
-                        onClick={getHolderDetails}
+                        onClick={updateHolder}
                         disabled={!connected}>
+                        Update Points
+                      </button>
+                      <button
+                        className="btn btn-outline-primary d-flex justify-content-center align-items-center"
+                        onClick={claimForHolder}
+                        disabled={!connected}>
+                        {isExploding && (
+                          <ConfettiExplosion {...largeConfetti} />
+                        )}
                         Claim Rewards
                       </button>
                     </div>

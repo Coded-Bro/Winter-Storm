@@ -4,6 +4,8 @@ import '../styles/base.css';
 import '../styles/responsive.css';
 import Head from 'next/head';
 import { useEffect } from 'react';
+import 'react-loading-skeleton/dist/skeleton.css';
+import { SkeletonTheme } from 'react-loading-skeleton';
 
 export default function App({ Component, pageProps }) {
   useEffect(() => {
@@ -62,7 +64,9 @@ export default function App({ Component, pageProps }) {
         />
       </Head>
 
-      <Component {...pageProps} />
+      <SkeletonTheme baseColor="#1A273B" highlightColor="#5C7C9D">
+        <Component {...pageProps} />
+      </SkeletonTheme>
 
       <footer className="footer">
         {/* Subscribe Form */}
