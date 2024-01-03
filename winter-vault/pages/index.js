@@ -75,7 +75,7 @@ export default function Home() {
     setChainId(newChainId);
     localStorage.setItem('currentChainId', newChainId);
     if (newChainId !== CHAIN_ID) {
-      setConnected(false);
+      disconnect();
     }
   };
 
