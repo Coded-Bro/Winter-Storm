@@ -99,17 +99,6 @@ export const getPoolDetails = async () => {
   );
   const totalStaked = tokenBalances.pool.toFixed('2');
 
-  const stmPerBlockRaw = await stormStakeContract.stmPerBlock();
-  const stmPerBlock = Number(
-    await convertToEth(null, stmPerBlockRaw.toString())
-  ).toFixed('2');
-  const blocksPerYear = 6400 * 365;
-  const annualRewards = stmPerBlock * blocksPerYear;
-
-  const apr = annualRewards / totalStaked / 100;
-  const n = 2;
-  const apy = ((1 + apr / n) ** n - 1).toFixed(2);
-
   const poolStats = {
     totalStaked,
     userStaked: userStaked,
@@ -117,8 +106,6 @@ export const getPoolDetails = async () => {
     multiplier: bonusMultiplier,
     userBalance: tokenBalances.user.toFixed('2'),
     tokenAddress: tokenAddress,
-    apr: apr.toFixed(2),
-    apy,
   };
 
   return poolStats;

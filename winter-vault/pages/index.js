@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { connectWallet } from '@/components/config';
 import { switchChain } from '@/components/config';
 import StormCardSkeleton from '@/components/StormCardSkeleton';
+import ConfettiExplosion from 'react-confetti-explosion';
 
 const CHAIN_ID = 5;
 
@@ -25,6 +26,15 @@ export default function Home() {
   const [infoIntervalId, setInfoIntervalId] = useState(null);
   const [connected, setConnected] = useState(false);
   const [currentChainId, setChainId] = useState(null);
+  const [isExploding, setIsExploding] = useState(false);
+
+  const largeConfetti = {
+    force: 0.8,
+    duration: 3000,
+    particleCount: 300,
+    width: 1600,
+    colors: ['#041E43', '#1471BF', '#5BB4DC', '#FC027B', '#66D805'],
+  };
 
   const connect = async () => {
     if (currentChainId !== CHAIN_ID) {
@@ -141,7 +151,9 @@ export default function Home() {
     e.target.disabled = true;
 
     try {
-      await claimHolderRewards();
+      await claimHolderRewards().then((_) => setIsExploding(true));
+
+      setTimeout(() => setIsExploding(false), 3000);
     } catch (err) {
       console.log(err);
     }
@@ -336,14 +348,8 @@ export default function Home() {
                   <div className="operate">
                     <div className="stake-info w-100">
                       <div className="d-flex justify-content-between">
-                        <div className="d-flex">
-                          <p>APR&nbsp;</p>
-                          <p className="fw-bold">{poolInfo.apr ?? 0}%</p>
-                        </div>
-                        <div className="d-flex">
-                          <p>APY&nbsp;</p>
-                          <p className="fw-bold">{poolInfo.apy ?? 0}%</p>
-                        </div>
+                        <p>APY&nbsp;</p>
+                        <p className="fw-bold">100% &#126; 400%</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Available $STM</p>
@@ -537,9 +543,12 @@ export default function Home() {
                         Update Points
                       </button>
                       <button
-                        className="btn btn-outline-primary"
+                        className="btn btn-outline-primary d-flex justify-content-center align-items-center"
                         onClick={claimForHolder}
                         disabled={!connected}>
+                        {isExploding && (
+                          <ConfettiExplosion {...largeConfetti} />
+                        )}
                         Claim Rewards
                       </button>
                     </div>
