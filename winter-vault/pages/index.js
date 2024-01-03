@@ -15,6 +15,7 @@ import { switchChain } from '@/components/config';
 import StormCardSkeleton from '@/components/StormCardSkeleton';
 import ConfettiExplosion from 'react-confetti-explosion';
 import { info } from 'sass';
+import numeral from 'numeral';
 
 const CHAIN_ID = 5;
 
@@ -170,6 +171,10 @@ export default function Home() {
       : '0x0...00';
   };
 
+  const formatNumber = (number) => {
+    return numeral(number).format('0.0a').toUpperCase();
+  };
+
   useEffect(() => {
     if (window.ethereum) {
       window.ethereum.on('accountsChanged', handleAccountsChanged);
@@ -195,7 +200,7 @@ export default function Home() {
     } else {
       setLoading(false);
     }
-  }, [currentChainId, connected, infoIntervalId]);
+  }, [currentChainId, connected]);
 
   return (
     <>
@@ -213,7 +218,7 @@ export default function Home() {
                 <ul className="logo_container">
                   <li>
                     <div className="font_extrabold text_xl">
-                      <Link href="/">
+                      <Link href="https://winterstorm.finance">
                         <span className="logo">
                           <span className="logo_image">
                             <img src="logo_with_word.svg" alt="" />
@@ -291,7 +296,7 @@ export default function Home() {
                           src="Storm_150x150.png"
                           alt=""
                         />
-                        <p>0.00 STM</p>
+                        <p>{formatNumber(holderInfo?.tokenBalance)} STM</p>
                       </div>
                       <a
                         href=""
