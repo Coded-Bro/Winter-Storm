@@ -96,7 +96,7 @@ export const getPoolDetails = async () => {
   );
   const userStaked = Number(
     await convertToEth('szabo', userStakedArray['amount'].toString())
-  );
+  ).toFixed('4');
   const totalStaked = tokenBalances.pool.toFixed('2');
 
   const poolStats = {
@@ -165,7 +165,7 @@ export const getHolderDetails = async () => {
     ).toFixed('2'),
     pendingRewards: Number(
       await convertToEth(null, holderInfo[2].toString())
-    ).toFixed('4'),
+    ).toFixed('2'),
     blocksTillNextBlizzard: Number(holderInfo[3].toString()),
   };
 
