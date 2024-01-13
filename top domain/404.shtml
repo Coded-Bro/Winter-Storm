@@ -122,9 +122,9 @@
                 <div class="kimano_404_inner">
                     <div class="kimano_404_content">
                         <h1 style="font-family: 'Iceberg';">404</h1>
-                        <p style="font-family: 'Iceberg';">Oops! This page doesn' t appear to exist in our system. Try one of the buttons below...</p>
+                        <p style="font-family: 'Iceberg';">Oops! This page doesn't appear to exist in our system. Try one of the buttons below...</p>
                         <div class="hero_content_btns">
-                            <a class=" p_arrow orange_hero_btn" href="https://stake.winterstorm.finance/index.html" target="_blank"><span class="menu_name">GET STORM</span>
+                            <a class=" p_arrow orange_hero_btn" href="https://app.camelot.exchange/" target="_blank"><span class="menu_name">GET STORM</span>
                             </a>
 
                             <a href="https://airdrop.winterstorm.finance" target="_blank"><span class="menu_name">AIRDROP FORM</span>
@@ -152,7 +152,7 @@
                         </svg> -->
                         <img src="https://winterstorm.finance/static/images/discord.png" alt="">
                       </a>
-                      <a target="_blank" href="https://t.me/Winter_Storm">
+                      <a target="_blank" href="https://t.me/WinterStorm_Fi">
                         <!-- <svg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg" role="img" class="discord-svg-icon"
                           fill="currentColor">
                           <path id="path"
