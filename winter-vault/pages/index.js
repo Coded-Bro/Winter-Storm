@@ -3,6 +3,7 @@ import {
   action,
   autoCompound,
   claimHolderRewards,
+  formatMoney,
   getHolderDetails,
   getPoolDetails,
   switchChain,
@@ -15,11 +16,23 @@ import StormCardSkeleton from '@/components/StormCardSkeleton';
 import ConfettiExplosion from 'react-confetti-explosion';
 import ActionButton from '@/components/ActionButton';
 import HolderActionButton from '@/components/HolderActionButton';
-import { useDisconnect, useWeb3Modal, useWeb3ModalAccount, useWeb3ModalEvents, useWeb3ModalProvider } from '@web3modal/ethers5/react';
+import {
+  useDisconnect,
+  useWeb3Modal,
+  useWeb3ModalAccount,
+  useWeb3ModalEvents,
+  useWeb3ModalProvider,
+} from '@web3modal/ethers5/react';
 import { STM_BUY_URL } from '@/utils/ConstantsUtil';
 import dynamic from 'next/dynamic';
+import { defaultChainId } from '@/utils/ConstantsUtil';
+import { formatMoneyReadably } from '@/utils/config';
+import CountUp from 'react-countup';
 
-const SSRLessConnectionButton = dynamic(() => import('../components/ConnectionButton'), { ssr: false });
+const SSRLessConnectionButton = dynamic(
+  () => import('../components/ConnectionButton'),
+  { ssr: false }
+);
 
 export default function Home() {
   const [poolInfo, setPoolInfo] = useState({});
@@ -45,7 +58,7 @@ export default function Home() {
 
   const handleChainChanged = (chainId) => {
     const newChainId = Number(chainId.toString());
-    if (newChainId !== 42161) {
+    if (newChainId !== defaultChainId) {
       disconnectApp();
     }
   };
@@ -56,7 +69,10 @@ export default function Home() {
         if (address) {
           try {
             const poolDetails = await getPoolDetails(walletProvider, address);
-            const holderDetails = await getHolderDetails(walletProvider, address);
+            const holderDetails = await getHolderDetails(
+              walletProvider,
+              address
+            );
             setPoolInfo(poolDetails);
             setHolderInfo(holderDetails);
           } catch (err) {
@@ -100,7 +116,12 @@ export default function Home() {
       return;
     }
     setLoading(true);
-    const result = await action(walletProvider, 'stake', amount, tokenAddress).then((value) => {
+    const result = await action(
+      walletProvider,
+      'stake',
+      amount,
+      tokenAddress
+    ).then((value) => {
       setLoading(false);
       setDone(true);
       setTimeout(() => setDone(false), 5000);
@@ -121,15 +142,18 @@ export default function Home() {
       return;
     }
     setLoading(true);
-    const result = await action(walletProvider, 'unstake', amount, tokenAddress).then(
-      (value) => {
-        setLoading(false);
-        setDone(true);
-        setTimeout(() => setDone(false), 5000);
+    const result = await action(
+      walletProvider,
+      'unstake',
+      amount,
+      tokenAddress
+    ).then((value) => {
+      setLoading(false);
+      setDone(true);
+      setTimeout(() => setDone(false), 5000);
 
-        return value;
-      }
-    );
+      return value;
+    });
     setInputValue('');
 
     if (result) {
@@ -139,7 +163,12 @@ export default function Home() {
 
   const claimStakeRewards = async (setLoading, setDone, tokenAddress) => {
     setLoading(true);
-    const result = await action(walletProvider, 'unstake', '0', tokenAddress).then((value) => {
+    const result = await action(
+      walletProvider,
+      'unstake',
+      '0',
+      tokenAddress
+    ).then((value) => {
       setLoading(false);
       setDone(true);
       setTimeout(() => setDone(false), 5000);
@@ -168,10 +197,15 @@ export default function Home() {
   };
 
   const disconnectApp = async () => {
-    await disconnect();
-    setPoolInfo({});
-    setHolderInfo({});
+    if (disconnect) {
+      await disconnect();
+    }
+    setPoolInfo({ apy: poolInfo.apy });
+    setHolderInfo({ apy: holderInfo.apy });
     clearInterval(infoIntervalId);
+    setInputValue('');
+    setError('');
+    setInfoIntervalId(null);
     setLoading(false);
   };
 
@@ -215,7 +249,8 @@ export default function Home() {
   };
 
   const formatAddress = () => {
-    return address ? `${address.slice(0, 5)}...${address.slice(-4)}`
+    return address
+      ? `${address.slice(0, 5)}...${address.slice(-4)}`
       : '0x0...00';
   };
 
@@ -238,13 +273,13 @@ export default function Home() {
 
   useEffect(() => {
     const switchToDefaultChain = async () => {
-      if (isConnected && chainId != 42161) {
-        await switchChain(42161);
+      if (isConnected && chainId != defaultChainId) {
+        await switchChain(defaultChainId);
       }
-    }
+    };
 
     switchToDefaultChain();
-    if (isConnected && Object.keys(holderInfo).length === 0) {
+    if (isConnected && Object.keys(holderInfo).length < 2) {
       setLoading(true);
       getInterfaceInfo();
     } else {
@@ -312,7 +347,13 @@ export default function Home() {
             </nav>
             <div className="d-flex justify-content-around">
               <div className="d-flex align-items-center">
-                <SSRLessConnectionButton isConnected={isConnected} openWeb3Modal={open} tokenBalance={holderInfo?.tokenBalance} disconnectApp={disconnectApp} formatAddress={formatAddress} />
+                <SSRLessConnectionButton
+                  isConnected={isConnected}
+                  openWeb3Modal={open}
+                  tokenBalance={poolInfo?.userBalance}
+                  disconnectApp={disconnectApp}
+                  formatAddress={formatAddress}
+                />
               </div>
               <div id="hamburger">
                 <span></span>
@@ -355,27 +396,37 @@ export default function Home() {
                     <div className="stake-info w-100">
                       <div className="d-flex justify-content-between">
                         <p>APY&nbsp;</p>
-                        <p className="fw-bold">100% &#126; 400%</p>
+                        <p className="fw-bold">{poolInfo?.apy ?? 0}%</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Available $STM</p>
-                        <p className="fw-bold">{poolInfo.userBalance ?? 0}</p>
+                        <p className="fw-bold">
+                          <CountUp
+                            end={poolInfo.userBalance ?? 0}
+                            duration={2}
+                            enableScrollSpy
+                          />
+                        </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>My Stakings</p>
-                        <p className="fw-bold">{poolInfo.userStaked ?? 0}</p>
+                        <p className="fw-bold">
+                          <CountUp
+                            end={poolInfo.userStakedAmount ?? 0}
+                            duration={2}
+                            enableScrollSpy
+                          />
+                        </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Pending Rewards</p>
-                        <p className="fw-bold">{poolInfo.reward ?? 0}</p>
-                      </div>
-                      <div className="d-flex justify-content-between">
-                        <p>Multiplier</p>
-                        <p className="fw-bold">{poolInfo.multiplier ?? 0}</p>
+                        <p className="fw-bold">{poolInfo.pendingReward ?? 0}</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Total Staked</p>
-                        <p className="fw-bold">{poolInfo.totalStaked ?? 0}</p>
+                        <p className="fw-bold">
+                          {formatMoney(poolInfo.totalAmountStaked ?? 0)}
+                        </p>
                       </div>
                     </div>
 
@@ -427,10 +478,11 @@ export default function Home() {
                               <input
                                 type="number"
                                 placeholder="0"
-                                className={`form-control stake-amount w-100 ${error
-                                  ? 'text-danger border border-danger'
-                                  : ''
-                                  }`}
+                                className={`form-control stake-amount w-100 ${
+                                  error
+                                    ? 'text-danger border border-danger'
+                                    : ''
+                                }`}
                                 id="stakeAmount"
                                 value={inputValue}
                                 onChange={handleInputChange}
@@ -448,15 +500,13 @@ export default function Home() {
                                 action={stake}
                                 text="Stake"
                                 btnType="primary"
-                                address={poolInfo.tokenAddress}
                               />
 
                               <ActionButton
                                 connected={isConnected}
                                 action={unstake}
-                                text="Unstake &amp; Claim"
+                                text="Unstake"
                                 btnType="primary"
-                                address={poolInfo.tokenAddress}
                               />
                             </div>
                             <div
@@ -467,7 +517,6 @@ export default function Home() {
                                 action={claimStakeRewards}
                                 text="Claim"
                                 btnType="outline-primary"
-                                address={poolInfo.tokenAddress}
                               />
 
                               <ActionButton
@@ -475,7 +524,6 @@ export default function Home() {
                                 action={compound}
                                 text="Auto Compound"
                                 btnType="outline-primary"
-                                address={poolInfo.tokenAddress}
                               />
                             </div>
                           </div>
@@ -484,15 +532,15 @@ export default function Home() {
                           {/* Stake Info */}
                           <div className="d-flex flex-column">
                             <p>Your Stakings</p>
-                            <p>{poolInfo.userStaked ?? 0}</p>
+                            <p>{formatMoney(poolInfo.userStakedAmount ?? 0)}</p>
                           </div>
                           <div className="d-flex flex-column">
                             <p>Your Earnings</p>
-                            <p>{poolInfo.reward ?? 0}</p>
+                            <p>{formatMoney(poolInfo.pendingReward ?? 0)}</p>
                           </div>
                           <div className="d-flex flex-column">
                             <p>Wallet Balance</p>
-                            <p>{poolInfo.userBalance ?? 0}</p>
+                            <p>{formatMoney(poolInfo.userBalance ?? 0)}</p>
                           </div>
                         </div>
                       </div>
@@ -506,7 +554,7 @@ export default function Home() {
               <div className="con">
                 <div className="desc">
                   <h2 className="pc" style={{ marginTop: '100px' }}>
-                    BLIZZARD REWARDSÂ SYSTEM
+                    HOLDERS REWARDÂ SYSTEM
                   </h2>
                   <p className="p">Storm Holders reward panel.</p>
                 </div>
@@ -523,32 +571,35 @@ export default function Home() {
                       src="Storm_150x150.png"
                       alt=""
                     />
-                    Hold STM to Earn STM
+                    Hold $STM to Earn $ARB
                   </div>
                   <div className="operate">
                     <div className="stake-info w-100">
                       <div className="d-flex justify-content-between">
-                        <p>Accumulated Points</p>
-                        <p className="fw-bold">
-                          {holderInfo.accumulatedPoints ?? 0} PTS
-                        </p>
+                        <p>APY</p>
+                        <p className="fw-bold">{holderInfo.apy ?? 0}%</p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>Pending Rewards</p>
                         <p className="fw-bold">
-                          {holderInfo.pendingRewards ?? 0} ARB
+                          {holderInfo.pendingReward ?? 0} ARB
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
-                        <p>Blocks till next Blizzard</p>
+                        <p>Last Updated Time</p>
                         <p className="fw-bold">
-                          {holderInfo.blocksTillNextBlizzard ?? 0} BLOCKS
+                          {holderInfo.lastUpdatedAt ?? '...'}
                         </p>
                       </div>
                       <div className="d-flex justify-content-between">
                         <p>$STM in Wallet</p>
                         <p className="fw-bold">
-                          {holderInfo.tokenBalance ?? 0} STM
+                          <CountUp
+                            end={poolInfo.userBalance ?? 0}
+                            duration={2}
+                            enableScrollSpy
+                          />{' '}
+                          STM
                         </p>
                       </div>
                     </div>
@@ -558,7 +609,7 @@ export default function Home() {
                         connected={isConnected}
                         action={updateHolder}
                         className="btn btn-primary">
-                        <span className="me-2">Update Points</span>
+                        <span className="me-2">Update Reward</span>
                       </HolderActionButton>
 
                       <HolderActionButton
@@ -568,7 +619,7 @@ export default function Home() {
                         {isExploding && (
                           <ConfettiExplosion {...largeConfetti} />
                         )}
-                        <span className="me-2">Claim Rewards</span>
+                        <span className="me-2">Claim Reward</span>
                       </HolderActionButton>
                     </div>
                   </div>
